@@ -1,0 +1,19 @@
+# Clean condition (no noise)
+
+name: gpla_noise_clean
+dataset: gpla
+shot: 5
+use_self_attention: true
+use_cross_attention: true
+snr: null
+
+seed: 42
+lr: 0.0001
+epochs: 50
+episodes_per_epoch: 100
+embed_dim: 128
+data_root: data/processed
+conformer_kwargs:
+  ffn_dim: 128
+  num_heads: 4
+  num_layers: 2

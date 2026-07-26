@@ -1,0 +1,20 @@
+{
+  "machine": "slider",
+  "total_samples": 4094,
+  "num_classes": 2,
+  "classes": [
+    "normal",
+    "anomaly"
+  ],
+  "sequence_length": 2000,
+  "sample_rate": 1000,
+  "train_size": 2243,
+  "val_size": 561,
+  "test_size": 1290,
+  "normal_train": 2243,
+  "anomaly_train": 0,
+  "normal_val": 561,
+  "anomaly_val": 0,
+  "normal_test": 400,
+  "anomaly_test": 890
+}

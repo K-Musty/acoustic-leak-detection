@@ -1,0 +1,23 @@
+{
+  "num_samples": 780,
+  "num_classes": 12,
+  "classes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "seq_len": 888,
+  "sample_rate": 1000,
+  "train": 468,
+  "val": 156,
+  "test": 156
+}

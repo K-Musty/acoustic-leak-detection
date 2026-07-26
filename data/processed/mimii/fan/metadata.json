@@ -1,0 +1,20 @@
+{
+  "machine": "fan",
+  "total_samples": 5550,
+  "num_classes": 2,
+  "classes": [
+    "normal",
+    "anomaly"
+  ],
+  "sequence_length": 2000,
+  "sample_rate": 1000,
+  "train_size": 2940,
+  "val_size": 735,
+  "test_size": 1875,
+  "normal_train": 2940,
+  "anomaly_train": 0,
+  "normal_val": 735,
+  "anomaly_val": 0,
+  "normal_test": 400,
+  "anomaly_test": 1475
+}

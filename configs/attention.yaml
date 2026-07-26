@@ -1,0 +1,18 @@
+# Full attention: Self + Cross attention, GPLA only
+
+name: gpla_attention
+dataset: gpla
+shot: 5
+use_self_attention: true
+use_cross_attention: true
+
+seed: 42
+lr: 0.0001
+epochs: 50
+episodes_per_epoch: 100
+embed_dim: 128
+data_root: data/processed
+conformer_kwargs:
+  ffn_dim: 128
+  num_heads: 4
+  num_layers: 2

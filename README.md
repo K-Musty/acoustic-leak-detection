@@ -1,6 +1,6 @@
 # Acoustic Leak Detection
 -------------------------
 
-### Data
+### Dataset
 - GPLA 
 - MIMII

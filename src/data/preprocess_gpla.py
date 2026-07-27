@@ -1,3 +1,4 @@
+# src/data/preprocess_gpla.py
 import os
 import json
 import numpy as np
@@ -7,7 +8,6 @@ from sklearn.model_selection import train_test_split
 def preprocess_gpla():
     """Convert GPLA raw XLSX to processed NPY arrays."""
     
-    # Paths
     raw_dir = 'data/raw/gpla_v2'
     proc_dir = 'data/processed/gpla_v2'
     
@@ -25,7 +25,11 @@ def preprocess_gpla():
         y = y[:X.shape[0]]
     print(f"Aligned: X {X.shape}, y {y.shape}")
 
+    # FIX: Convert labels 1-12 to 0-11 for PyTorch
+    y = y - 1
+
     print(f"✅ Loaded {len(X)} samples, {len(np.unique(y))} classes")
+    print(f"   Labels: {np.unique(y)} (0-indexed)")
     
     # Normalize 12-bit ADC to [-1, 1]
     X = (X / 2048.0) - 1.0

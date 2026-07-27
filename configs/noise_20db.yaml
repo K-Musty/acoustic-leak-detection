@@ -1,19 +1,19 @@
 # SNR = 20dB (mild noise)
 
-name: gpla_noise_20db
+name: noise_20db_fixed
 dataset: gpla
 shot: 5
-use_self_attention: true
-use_cross_attention: true
-snr: 20
-
 seed: 42
 lr: 0.0001
-epochs: 50
+epochs: 100
 episodes_per_epoch: 100
 embed_dim: 128
-data_root: data/processed
+snr: 20
+use_self_attention: true
+use_cross_attention: true
 conformer_kwargs:
-  ffn_dim: 128
+  ffn_dim: 256
   num_heads: 4
-  num_layers: 2
+  num_layers: 4
+  kernel_size: 31
+data_root: data/processed

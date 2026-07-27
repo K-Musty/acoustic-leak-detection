@@ -1,11 +1,12 @@
-# src/data/unified_dataset.py
+# CELL: Overwrite unified_dataset.py with correct version
+%%writefile src/data/unified_dataset.py
 import os
 import json
 import numpy as np
 import torch
 
 class UnifiedAcousticDataset:
-    def __init__(self, dataset='gpla', machine='fan', split='train', 
+    def __init__(self, dataset='gpla', machine='fan', split='train',
                  shot=5, seed=42, snr=None, data_root='data/processed'):
         self.dataset = dataset
         self.machine = machine
@@ -35,14 +36,16 @@ class UnifiedAcousticDataset:
         self.num_classes = len(self.classes)
         self.class_to_idx = {c: np.where(self.y == c)[0].tolist() for c in self.classes}
         print(f"✅ Loaded GPLA ({self.split}): {len(self.X)} samples, {self.num_classes} classes")
-        print(f"   Classes: {self.classes} (0-indexed)")
+        print(f"   Classes: {self.classes}")
 
     def _load_mimii(self):
         path = f'{self.data_root}/mimii/{self.machine}/'
+        # Use the split directly (train/val/test)
         self.X = np.load(f'{path}/X_{self.split}.npy')
         self.y = np.load(f'{path}/y_{self.split}.npy')
         with open(f'{path}/metadata.json', 'r') as f:
             self.metadata = json.load(f)
+        # Binary classes: 0 = normal, 1 = anomaly
         self.classes = [0, 1]
         self.num_classes = len(self.classes)
         self.class_to_idx = {
@@ -63,6 +66,7 @@ class UnifiedAcousticDataset:
         return signal + scale * noise
 
     def get_episode(self):
+        # Filter classes with at least shot*2 samples
         available_classes = []
         for cls in self.classes:
             cnt = len(self.class_to_idx[cls])
@@ -76,8 +80,10 @@ class UnifiedAcousticDataset:
         if not available_classes:
             raise ValueError(f"No class has enough samples for shot={self.shot}. "
                              f"Counts: {[(c, len(self.class_to_idx[c])) for c in self.classes]}")
+        # Sample all available classes (or subset if more than needed)
         num_to_sample = min(self.num_classes, len(available_classes))
         classes = self.rng.choice(available_classes, num_to_sample, replace=False)
+
         support_X, support_y, query_X, query_y = [], [], [], []
         for cls in classes:
             idx = self.class_to_idx[cls]

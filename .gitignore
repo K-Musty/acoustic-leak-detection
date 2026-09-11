@@ -1,2 +1,31 @@
-.venv
-data/raw
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data
+data/raw/
+data/processed/
+*.npy
+*.npz
+
+# Model checkpoints
+experiments/
+*.pt
+*.pth
+
+# Notebooks
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store

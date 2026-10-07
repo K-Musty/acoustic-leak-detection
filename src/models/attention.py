@@ -1,40 +1,61 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class SelfAttention(nn.Module):
-    def __init__(self, embed_dim=128):
+    def __init__(self, embed_dim=128, num_heads=4, dropout=0.1):
         super().__init__()
-        self.embed_dim = embed_dim
-        self.scale = embed_dim ** -0.5
-        self.query_proj = nn.Linear(embed_dim, embed_dim)
-        self.key_proj = nn.Linear(embed_dim, embed_dim)
-        self.value_proj = nn.Linear(embed_dim, embed_dim)
-    
+        self.mha = nn.MultiheadAttention(
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.norm = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(dropout)
+
     def forward(self, support_embeddings):
-        Q = self.query_proj(support_embeddings)
-        K = self.key_proj(support_embeddings)
-        V = self.value_proj(support_embeddings)
-        scores = torch.matmul(Q, K.T) * self.scale
-        weights = F.softmax(scores, dim=-1)
-        weighted = torch.matmul(weights, V)
-        per_sample_weights = weights.mean(dim=0)
-        return weighted, per_sample_weights
+        # support_embeddings: (num_support, embed_dim)
+        # Add batch dimension: (1, num_support, embed_dim)
+        query = key = value = support_embeddings.unsqueeze(0)
+
+        attn_out, attn_weights = self.mha(query, key, value)
+
+        attn_out = attn_out.squeeze(0)  # (num_support, embed_dim)
+
+        # Residual + LayerNorm
+        out = self.norm(support_embeddings + self.dropout(attn_out))
+
+        # attn_weights: (1, num_support, num_support) -> average over query dim
+        per_sample_weights = attn_weights.mean(dim=1).squeeze(0)  # (num_support,)
+
+        return out, per_sample_weights
+
 
 class CrossAttention(nn.Module):
-    def __init__(self, embed_dim=128):
+    def __init__(self, embed_dim=128, num_heads=4, dropout=0.1):
         super().__init__()
-        self.embed_dim = embed_dim
-        self.scale = embed_dim ** -0.5
-        self.query_proj = nn.Linear(embed_dim, embed_dim)
-        self.key_proj = nn.Linear(embed_dim, embed_dim)
-        self.value_proj = nn.Linear(embed_dim, embed_dim)
-    
+        self.mha = nn.MultiheadAttention(
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.norm = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(dropout)
+
     def forward(self, query_embedding, prototypes):
-        Q = self.query_proj(query_embedding)
-        K = self.key_proj(prototypes)
-        V = self.value_proj(prototypes)
-        scores = torch.matmul(Q, K.T) * self.scale
-        weights = F.softmax(scores, dim=-1)
-        attended = torch.matmul(weights, V)
-        return attended, weights
+        # query_embedding: (num_query, embed_dim)
+        # prototypes: (num_classes, embed_dim)
+
+        query = query_embedding.unsqueeze(0)      # (1, num_query, embed_dim)
+        key = value = prototypes.unsqueeze(0)     # (1, num_classes, embed_dim)
+
+        attn_out, attn_weights = self.mha(query, key, value)
+
+        attn_out = attn_out.squeeze(0)  # (num_query, embed_dim)
+
+        # Residual + LayerNorm
+        out = self.norm(query_embedding + self.dropout(attn_out))
+
+        return out, attn_weights.squeeze(0)  # (num_query, num_classes)

@@ -1,9 +1,8 @@
-# CELL: Overwrite unified_dataset.py with correct version
-%%writefile src/data/unified_dataset.py
 import os
 import json
 import numpy as np
 import torch
+
 
 class UnifiedAcousticDataset:
     def __init__(self, dataset='gpla', machine='fan', split='train',
@@ -34,13 +33,14 @@ class UnifiedAcousticDataset:
             self.metadata = json.load(f)
         self.classes = self.metadata['classes']
         self.num_classes = len(self.classes)
-        self.class_to_idx = {c: np.where(self.y == c)[0].tolist() for c in self.classes}
+        self.class_to_idx = {
+            c: np.where(self.y == c)[0].tolist() for c in self.classes
+        }
         print(f"✅ Loaded GPLA ({self.split}): {len(self.X)} samples, {self.num_classes} classes")
         print(f"   Classes: {self.classes}")
 
     def _load_mimii(self):
         path = f'{self.data_root}/mimii/{self.machine}/'
-        # Use the split directly (train/val/test)
         self.X = np.load(f'{path}/X_{self.split}.npy')
         self.y = np.load(f'{path}/y_{self.split}.npy')
         with open(f'{path}/metadata.json', 'r') as f:
@@ -50,7 +50,7 @@ class UnifiedAcousticDataset:
         self.num_classes = len(self.classes)
         self.class_to_idx = {
             0: np.where(self.y == 0)[0].tolist(),
-            1: np.where(self.y == 1)[0].tolist()
+            1: np.where(self.y == 1)[0].tolist(),
         }
         print(f"✅ Loaded MIMII ({self.machine}, {self.split}): {len(self.X)} samples, {self.num_classes} classes")
         for c in self.classes:
@@ -77,10 +77,13 @@ class UnifiedAcousticDataset:
                     print(f"⚠️ Class {cls} has only {cnt} samples (need {self.shot*2}) - skipping")
                 else:
                     print(f"⚠️ Class {cls} has 0 samples - skipping")
+
         if not available_classes:
-            raise ValueError(f"No class has enough samples for shot={self.shot}. "
-                             f"Counts: {[(c, len(self.class_to_idx[c])) for c in self.classes]}")
-        # Sample all available classes (or subset if more than needed)
+            raise ValueError(
+                f"No class has enough samples for shot={self.shot}. "
+                f"Counts: {[(c, len(self.class_to_idx[c])) for c in self.classes]}"
+            )
+
         num_to_sample = min(self.num_classes, len(available_classes))
         classes = self.rng.choice(available_classes, num_to_sample, replace=False)
 
@@ -91,19 +94,22 @@ class UnifiedAcousticDataset:
                 selected = self.rng.choice(idx, self.shot * 2, replace=True)
             else:
                 selected = self.rng.choice(idx, self.shot * 2, replace=False)
+
             for i in range(self.shot):
                 sig = self.X[selected[i]].copy()
                 sig = self._add_noise(sig)
                 support_X.append(sig)
                 support_y.append(cls)
+
             for i in range(self.shot, self.shot * 2):
                 sig = self.X[selected[i]].copy()
                 sig = self._add_noise(sig)
                 query_X.append(sig)
                 query_y.append(cls)
+
         return (
             torch.FloatTensor(np.array(support_X)),
             torch.LongTensor(np.array(support_y)),
             torch.FloatTensor(np.array(query_X)),
-            torch.LongTensor(np.array(query_y))
+            torch.LongTensor(np.array(query_y)),
         )
